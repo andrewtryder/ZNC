@@ -21,7 +21,6 @@ def configure(advanced):
 
 
 ZNC = conf.registerPlugin('ZNC')
-conf.registerGlobalValue(ZNC,'channels',registry.String('', _("""Channels to operate it in.""")))
 
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=150:
