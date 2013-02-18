@@ -100,12 +100,12 @@ class ZNC(callbacks.Plugin):
             return
         users = self._users.items()
         if users:
-            irc.reply("--------------------------------------------------------------------------------------------------")
+            irc.reply("+------------+------------------------------------------+-----------------+----------------------+")
             irc.reply("| {0:10} | {1:40} | {2:15} | {3:20} |".format('USERNAME', 'HOSTMASK', 'KEY', 'CHANNEL'))
-            irc.reply("--------------------------------------------------------------------------------------------------")
+            irc.reply("+------------+------------------------------------------+-----------------+----------------------+")
             for (k, v) in users:
-                irc.reply("| {0:10} | {1:40} | {2:15} | {3:20} |".format(k,v[0][0],v[0][1],v[0][2]))
-            irc.reply("--------------------------------------------------------------------------------------------------")
+                irc.reply("| {0:10} | {1:40} | {2:15} | {3:20} |".format(k, v[0][0], v[0][1], v[0][2]))
+            irc.reply("+------------+------------------------------------------+-----------------+----------------------+")
         else:
             irc.reply("I have no ZNC users.")
 
@@ -113,26 +113,33 @@ class ZNC(callbacks.Plugin):
 
     def zncadduser(self, irc, msg, args, username, hostmask, key, channel):
         """<username> <hostmask> <key> <channel>
-        Add a user to the ZNC auto-op database. Ex:
+        Add a user to the ZNC auto-op database. Ex: user1 *!*user@hostmask.com passkey #channel
         NOTICE: I must be run via private message by an admin.
         """
 
         if irc.isChannel(ircutils.toLower(msg.args[0])):
-            #raise callbacks.Error, conf.supybot.replies.requiresPrivacy()
             irc.reply("ERROR: I must be run via private message by an admin.")
             return
-
-        # do our checks now to see if we can add.
-        if username in self._users:
+        if username in self._users:  # do our checks now to see if we can add.
             irc.reply("ERROR: I already have a user: {0}".format(username))
             return
-        # check the hostnames.
+        if not ircutils.isChannel(channel):  # make sure the channel is valid.
+            irc.reply("ERROR: {0} is not a valid channel".format(channel))
+            return
+        if not ircutils.isUserHostmask(hostmask):  # make sure hostmask is valid.
+            irc.reply("ERROR: {0} is not a valid hostmask.".format(hostmask))
+            return
         if len(self._users) > 0:  # make sure we have users to check against.
-            for (k, v) in self._users:
+            failcheck = False
+            for (k, v) in self._users.items():  # check the hostnames.
                 userhostname, userkey, userchannel = v[0]
                 if ircutils.hostmaskPatternEqual(hostmask, userhostname) and channel == userchannel:
-                    irc.reply("ERROR: hostmask {0} matches the hostmask {1} in existing user: {2}".format(hostmask, userhostname, k))
+                    irc.reply("ERROR: I cannot add {0}. Hostmask {1} matches the hostmask {2} in existing user: {3} for {4}".format(username, hostmask, userhostname, k, channel))
+                    failcheck = True
                     break
+        # check if hostname passed.
+        if failcheck:
+            return
         # username and hostmask are clean. lets add.
         try:
             self._addUser(username, hostmask, key, channel)
@@ -157,7 +164,7 @@ class ZNC(callbacks.Plugin):
             self._flushUsers()
             irc.replySuccess()
         except KeyError:
-            irc.error('There was no userid: %s' % uid)
+            irc.reply('ERROR: There is no userid: %s' % username)
 
     zncremoveuser = wrap(zncremoveuser, [('checkCapability', 'admin'), ('somethingWithoutSpaces')])
 
@@ -209,7 +216,7 @@ class ZNC(callbacks.Plugin):
                 self.log.info("We got a ZNC response from {0}".format(user))
                 if user in self._challenges:  # user is in challenges because their hostname matched.
                     for chan in self._challenges[user]:
-                        if irc.state.channels[chan].isOp(mynick) and not irc.state.channels[chan].isOp(user): # im op. they're not.
+                        if irc.state.channels[chan].isOp(mynick) and not irc.state.channels[chan].isOp(user):  # im op. they're not.
                             (chaltime, challenge, chaluser) = self._challenges[user][chan]
                             if chaltime - time.time() < 60:  # challenge less than 60s ago.
                                 hostmask, key, channel = self._users[chaluser][0]  # find the user in the db.
@@ -240,7 +247,7 @@ class ZNC(callbacks.Plugin):
                             challenge = "!ZNCAO CHALLENGE {0}".format(challenge)
                             def sendNotice():  # for the delayed send.
                                 irc.queueMsg(ircmsgs.notice(user, challenge))
-                            schedule.addEvent(sendNotice, (time.time() + choice(range(3,6))))
+                            schedule.addEvent(sendNotice, (time.time() + choice(range(3, 6))))
                             break
 
 Class = ZNC
