@@ -30,6 +30,10 @@ Instructions
 
     See: zncadduser / znclistusers
 
+    NOTE: I did NOT implement the __NOKEY__ feature (essentially auto-op for clients not running ZNC)
+    from the ZNC autoop module because there are other ways to do such a thing, like with AutoMode, already in Supybot.
+    I have no plans either as it would require a rewrite of some major parts. 
+
 Warnings
 
     I cannot emphasize what I said under the disclaimer enough. People think because this issues a challenge,
