@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###
-# Copyright (c) 2013, spline
+# Copyright (c) 2013-2014, spline
 # All rights reserved.
 #
 #
@@ -231,6 +231,8 @@ class ZNC(callbacks.Plugin):
                 else:
                     self.log.info("ERROR: {0} not found in ZNC challenges.".format(user))
 
+    # if not irc.state.channels[channel].synchro:
+
     def doJoin(self, irc, msg):
         channel = ircutils.toLower(msg.args[0])
         mynick = irc.nick
@@ -247,7 +249,7 @@ class ZNC(callbacks.Plugin):
                             challenge = "!ZNCAO CHALLENGE {0}".format(challenge)
                             def sendNotice():  # for the delayed send.
                                 irc.queueMsg(ircmsgs.notice(user, challenge))
-                            schedule.addEvent(sendNotice, (time.time() + choice(range(3, 6))))
+                            schedule.addEvent(sendNotice, (time.time() + choice(range(2, 6))))
                             break
 
 Class = ZNC
