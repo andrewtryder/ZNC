@@ -1,41 +1,78 @@
-Supybot-ZNC
-===========
+[![Build Status](https://travis-ci.org/reticulatingspline/ZNC.svg?branch=master)](https://travis-ci.org/reticulatingspline/ZNC)
 
-Supybot plugin to support ZNC autoop plugin/module.
+# Limnoria plugin for ZNC's autoop module.
+
+## Introduction
+
+First, I can't emphasize enough the dangers of any type of auto-op system. Passwords get stolen
+or hacked, hosts have, at times, been spoofed or forged, etc. If you're paranoid, don't run this.
+The storage system uses plain-text for this module so, unless this is run on a secure and dedicated
+box, it's not secure. ZNC's module is the same so, again, even with the hostmask matching with
+challenge, do not consider this secure.
+
+ZNC, the awesome IRC bouncer, includes an autoop module that was designed to work between clients.
+
+http://wiki.znc.in/Autoop
+
+Someone did great work to port this over to TCL (vomit) so that it can work on Eggdrop bots. I decided
+to do the same for Supybot/Limnoria.
 
 
-Disclaimer
+Grab plugin and load. You will need to then need to add matching users on both the bot and ZNC client.
 
-    First, I can't emphasize enough the dangers of any type of auto-op system. Passwords get stolen
-    or hacked, hosts have, at times, been spoofed or forged, etc. If you're paranoid, don't run this.
-    The storage system uses plain-text for this module so, unless this is run on a secure and dedicated
-    box, it's not secure. ZNC's module is the same so, again, even with the hostmask matching with
-    challenge, do not consider this secure.
+As both are similar beyond their commands, you basically add a user that matches the other client/hostmask
+with the same key and channel. I've tested this with ZNC 1.0 and the latest version of Limnoria.
 
-Background
+NOTE: I did NOT implement the __NOKEY__ feature (essentially auto-op for clients not running ZNC)
+from the ZNC autoop module because there are other ways to do such a thing, like with AutoMode, already in Supybot.
+I have no plans either as it would require a rewrite of some major parts. 
 
-    ZNC, the awesome IRC bouncer, includes an autoop module that was designed to work between clients.
+## Install
 
-    http://wiki.znc.in/Autoop
+You will need a working Limnoria bot on Python 2.7 for this to work.
 
-    Someone did great work to port this over to TCL (vomit) so that it can work on Eggdrop bots. I decided
-    to do the same for Supybot/Limnoria.
+Go into your Limnoria plugin dir, usually ~/supybot/plugins and run:
 
-Instructions
+```
+git clone https://github.com/reticulatingspline/ZNC
+```
 
-    Grab plugin and load. You will need to then need to add matching users on both the bot and ZNC client.
+To install additional requirements, run:
 
-    As both are similar beyond their commands, you basically add a user that matches the other client/hostmask
-    with the same key and channel. I've tested this with ZNC 1.0 and the latest version of Limnoria.
+```
+pip install -r requirements.txt 
+```
 
-    See: zncadduser / znclistusers
+Next, load the plugin:
 
-    NOTE: I did NOT implement the __NOKEY__ feature (essentially auto-op for clients not running ZNC)
-    from the ZNC autoop module because there are other ways to do such a thing, like with AutoMode, already in Supybot.
-    I have no plans either as it would require a rewrite of some major parts. 
+```
+/msg bot load ZNC
+```
 
-Warnings
+Now, you will need to configure a user and mate it up with your autoop config.
 
-    I cannot emphasize what I said under the disclaimer enough. People think because this issues a challenge,
-    instead of just matching a channel/hostmask, that it is secure. It is not. I recommend this for small channels
-    where you don't have a botnet ready
+## Example Usage 
+
+(Must be in priv msg and as at least an admin on the bot where it is an op in #channel.)
+
+```
+<spline> zncadduser spline *!*spline@*host.mask key #channel 
+<myybot> OK
+<spline> znclistusers
+<myybot> +------------+------------------------------------------+-----------------+----------------------+
+<myybot> | USERNAME   | HOSTMASK                                 | KEY             | CHANNEL              |
+<myybot> +------------+------------------------------------------+-----------------+----------------------+
+<myybot> | spline     | *!*spline@*host.mask                     | key             | #channel             |
+<myybot> +------------+------------------------------------------+-----------------+----------------------+
+<spline> zncremoveuser spline
+<myybot> OK
+```
+
+## About
+
+All of my plugins are free and open source. When I first started out, one of the main reasons I was
+able to learn was due to other code out there. If you find a bug or would like an improvement, feel
+free to give me a message on IRC or fork and submit a pull request. Many hours do go into each plugin,
+so, if you're feeling generous, I do accept donations via Amazon or browse my [wish list](http://amzn.com/w/380JKXY7P5IKE).
+
+I'm always looking for work, so if you are in need of a custom feature, plugin or something bigger, contact me via GitHub or IRC
