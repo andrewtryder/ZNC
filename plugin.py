@@ -11,7 +11,7 @@ import time  # challenges
 from collections import defaultdict  # challenges
 import hashlib  # md5
 from random import choice  # md5
-import re  # regex
+# import re  # regex
 import csv  # db
 # addt'l supybot
 import supybot.ircmsgs as ircmsgs
@@ -32,7 +32,6 @@ except ImportError:
     _ = lambda x:x
 
 
-@internationalizeDocstring
 class ZNC(callbacks.Plugin):
     """Add the help for "@plugin help ZNC" here
     This should describe *how* to use this plugin."""
@@ -103,24 +102,29 @@ class ZNC(callbacks.Plugin):
         if irc.isChannel(ircutils.toLower(msg.args[0])):
             irc.reply("ERROR: I must be run via private message by an admin.")
             return
+        # grab users.
         users = self._users.items()
-        if users:
+        if users:  # we have users.
             irc.reply("+------------+------------------------------------------+-----------------+----------------------+")
             irc.reply("| {0:10} | {1:40} | {2:15} | {3:20} |".format('USERNAME', 'HOSTMASK', 'KEY', 'CHANNEL'))
             irc.reply("+------------+------------------------------------------+-----------------+----------------------+")
             for (k, v) in users:
                 irc.reply("| {0:10} | {1:40} | {2:15} | {3:20} |".format(k, v[0][0], v[0][1], v[0][2]))
             irc.reply("+------------+------------------------------------------+-----------------+----------------------+")
-        else:
-            irc.reply("I have no ZNC users.")
+        else:  # no users found.
+            irc.reply("I have no ZNC users. You may add them via zncadduser")
 
-    znclistuser = wrap(znclistusers, [('checkCapability', 'admin')])
+    znclistusers = wrap(znclistusers, [('checkCapability', 'admin')])
 
     def zncadduser(self, irc, msg, args, username, hostmask, key, channel):
         """<username> <hostmask> <key> <channel>
+        
         Add a user to the ZNC auto-op database. Ex: user1 *!*user@hostmask.com passkey #channel
         NOTICE: I must be run via private message by an admin.
         """
+
+        # declare failcheck.
+        failcheck = False
 
         if irc.isChannel(ircutils.toLower(msg.args[0])):
             irc.reply("ERROR: I must be run via private message by an admin.")
@@ -135,7 +139,6 @@ class ZNC(callbacks.Plugin):
             irc.reply("ERROR: {0} is not a valid hostmask.".format(hostmask))
             return
         if len(self._users) > 0:  # make sure we have users to check against.
-            failcheck = False
             for (k, v) in self._users.items():  # check the hostnames.
                 userhostname, userkey, userchannel = v[0]
                 if ircutils.hostmaskPatternEqual(hostmask, userhostname) and channel == userchannel:
@@ -156,6 +159,7 @@ class ZNC(callbacks.Plugin):
 
     def zncremoveuser(self, irc, msg, args, username):
         """<username>
+        
         Delete a user from the ZNC auto-op database.
         NOTICE: I must be run via private message by an admin.
         """
@@ -163,6 +167,7 @@ class ZNC(callbacks.Plugin):
         if irc.isChannel(ircutils.toLower(msg.args[0])):
             irc.reply("ERROR: I must be run via private message by an admin.")
             return
+        
         try:
             del self._users[username]
             self._popUserCache()
@@ -174,8 +179,14 @@ class ZNC(callbacks.Plugin):
     zncremoveuser = wrap(zncremoveuser, [('checkCapability', 'admin'), ('somethingWithoutSpaces')])
 
     def zncprintcache(self, irc, msg, args):
+        """
+        
+        prints the channels in cache.
+        """
+        
         irc.reply("Channels: {0}".format(self._channels))
-    zncprintcache = wrap(zncprintcache)
+    
+    zncprintcache = wrap(zncprintcache, [('checkCapability', 'admin')])
 
     ######################
     # INTERNAL FUNCTIONS #
