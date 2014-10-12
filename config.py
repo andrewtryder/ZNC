@@ -7,9 +7,14 @@
 
 import supybot.conf as conf
 import supybot.registry as registry
-from supybot.i18n import PluginInternationalization, internationalizeDocstring
+try:
+    from supybot.i18n import PluginInternationalization
+    _ = PluginInternationalization('ZNC')
+except:
+    # Placeholder that allows to run the plugin on a bot
+    # without the i18n module
+    _ = lambda x:x
 
-_ = PluginInternationalization('ZNC')
 
 def configure(advanced):
     # This will be called by supybot to configure this module.  advanced is

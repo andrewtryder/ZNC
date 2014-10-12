@@ -23,9 +23,14 @@ from supybot.commands import *
 import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
-from supybot.i18n import PluginInternationalization, internationalizeDocstring
+try:
+    from supybot.i18n import PluginInternationalization
+    _ = PluginInternationalization('ZNC')
+except ImportError:
+    # Placeholder that allows to run the plugin on a bot
+    # without the i18n module
+    _ = lambda x:x
 
-_ = PluginInternationalization('ZNC')
 
 @internationalizeDocstring
 class ZNC(callbacks.Plugin):
