@@ -4,6 +4,9 @@
 
 ## Introduction
 
+I consider this plugin BETA. It works for me but I'm sure with the nature of a plugin like this
+that some things are broken.
+
 First, I can't emphasize enough the dangers of any type of auto-op system. Passwords get stolen
 or hacked, hosts have, at times, been spoofed or forged, etc. If you're paranoid, don't run this.
 The storage system uses plain-text for this module so, unless this is run on a secure and dedicated
